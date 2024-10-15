@@ -28,9 +28,8 @@ class TtsTools:
         return TtsTools._instance
     
     def __init__(self):
-        self.config = global_config.Config()
-        
         if USE_TTS != 'edge':
+            self.config = global_config.Config()
             os.chdir('/opt/xieyan/git/GPT-SoVITS_cmd')
             self.dic_args = {'model_name':'zhaozx',
                         'sovits_path':self.config.sovits_path,
@@ -119,7 +118,7 @@ class TtsTools:
         sf.write(out_mp3_path, resampled_data, rate, format="wav")
         SrtTools.get_instance().write_srt(texts_out, out_srt_path, rate=tts_rate, no_speech='keep')
 
-    def edge_tts(text, out_mp3_path, language = 'zh_CN', debug=False):
+    def edge_tts(self, text, out_mp3_path, language = 'zh_CN', debug=False):
         try:
             if os.path.exists(out_mp3_path):
                 os.remove(out_mp3_path)
