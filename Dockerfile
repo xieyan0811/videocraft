@@ -7,6 +7,11 @@ RUN apt-get update && \
     git lfs install && \
     rm -rf /var/lib/apt/lists/*
 
+COPY res/simsun.ttf /usr/share/fonts/truetype/
+COPY res/SourceHanSansSC-VF.ttf /usr/share/fonts/truetype/
+RUN fc-cache -v
+RUN fc-list :lang=zh
+
 WORKDIR /workspace
 COPY requirements.txt /workspace/
 RUN pip install --no-cache-dir -r requirements.txt

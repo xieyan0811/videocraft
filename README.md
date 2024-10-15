@@ -27,6 +27,6 @@ $ apt-get install ffmpeg
 
 ### 调用示例
 ``` shell
-$ python main.py -g -v /opt/xieyan/tmp/240417/8da802015ec1f6fac1ea3e60da19c782.mp4 -o data/tmp.srt
-$ python main.py -m -v /opt/xieyan/tmp/240417/8da802015ec1f6fac1ea3e60da19c782.mp4 -s /opt/xieyan/git/GPT-SoVITS_cmd/video_edit/data/tmp.srt -o /opt/xieyan/git/GPT-SoVITS_cmd/video_edit/data/8da.mp4
+$ python main.py -g -v /exports/tmp/240417/8da802015ec1f6fac1ea3e60da19c782.mp4 -o data/tmp.srt
+$ python main.py -m -v /exports/tmp/240417/8da802015ec1f6fac1ea3e60da19c782.mp4 -s data/tmp.srt -o data/8da.mp4
 ```
