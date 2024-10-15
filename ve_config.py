@@ -16,6 +16,8 @@ mp4_output_path = os.path.join(DATA_DIR, 'base_new.mp4')
 mp3_tmp_path = os.path.join(DATA_DIR, 'tmp.mp3')
 
 TMP_PATH = '/tmp/video/'
+if not os.path.exists(TMP_PATH):
+    os.mkdir(TMP_PATH)
 NO_EMPTY_SRT_PATH = os.path.join(TMP_PATH, 'no_empty.srt')
 ADJ_SRT_PATH = os.path.join(TMP_PATH, 'adj.srt')
 TMP_VIDEO_SRT_PATH = os.path.join(TMP_PATH, 'tmp_srt.mp4')
