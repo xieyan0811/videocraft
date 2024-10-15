@@ -74,6 +74,6 @@ class VideoTools:
         self.add_subtitle(video_input_path, srt_path, TMP_VIDEO_SRT_PATH, force=force)
         self.merge_audio_video(TMP_VIDEO_SRT_PATH, audio_input_path, TMP_VIDEO_MERGE_PATH, force=force)
         self.do_cut(TMP_VIDEO_MERGE_PATH, video_output_path, srt_path)
-        os.remove(TMP_VIDEO_SRT_PATH)
-        os.remove(TMP_VIDEO_MERGE_PATH)
+        #os.remove(TMP_VIDEO_SRT_PATH)
+        #os.remove(TMP_VIDEO_MERGE_PATH)
 

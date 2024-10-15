@@ -1,8 +1,8 @@
 ### Linux 系统安装字体支持中文字幕
 
 ``` shell
-$ cp xxx/simsun.ttf /usr/share/fonts/truetype/
-$ cp xxx/SourceHanSansSC-VF.ttf /usr/share/fonts/truetype/
+$ cp res/simsun.ttf /usr/share/fonts/truetype/
+$ cp res/SourceHanSansSC-VF.ttf /usr/share/fonts/truetype/
 $ fc-cache -v
 $ fc-list :lang=zh
 ```
