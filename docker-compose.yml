@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  videocraft:
+    image: videocraft:0.0.2
+    container_name: videocraft
+    volumes:
+      - /exports:/exports
+    tty: true
+    command: bash
