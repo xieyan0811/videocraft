@@ -1,13 +1,20 @@
 import os
 import torch
-import config as global_config
 import soundfile as sf
 import numpy as np
+from loguru import logger
 
 from scipy.signal import resample
 from ve_utils import SrtTools
 
-from command.inference import get_tts_wav, g_infer # 时间很长，后面优化 (g_infer)
+USE_TTS = 'edge' # later move to config
+
+if USE_TTS == 'edge':
+    import edge_tts
+else:
+    import config as global_config
+    from command.inference import get_tts_wav, g_infer # 时间很长，后面优化 (g_infer)
+    
 
 TMP_WAV = '/tmp/output.wav'
 
@@ -22,25 +29,26 @@ class TtsTools:
     
     def __init__(self):
         self.config = global_config.Config()
-        os.chdir('/opt/xieyan/git/GPT-SoVITS_cmd')
+        
+        if USE_TTS != 'edge':
+            os.chdir('/opt/xieyan/git/GPT-SoVITS_cmd')
+            self.dic_args = {'model_name':'zhaozx',
+                        'sovits_path':self.config.sovits_path,
+                        'gpt_path':self.config.gpt_path,
+                        'default_refer_path':'',
+                        'default_refer_text':'',
+                        'default_refer_language':'',
+                        'device':"cuda" if torch.cuda.is_available() else "cpu",
+                        'bind_addr':'0.0.0.0',
+                        'port':9880,
+                        'full_precision':False,
+                        'half_precision':False,
+                        'hubert_path':self.config.cnhubert_path,
+                        'bert_path':self.config.bert_path}
+            
+            g_infer.load(self.config, self.dic_args)
 
-        self.dic_args = {'model_name':'zhaozx',
-                    'sovits_path':self.config.sovits_path,
-                    'gpt_path':self.config.gpt_path,
-                    'default_refer_path':'',
-                    'default_refer_text':'',
-                    'default_refer_language':'',
-                    'device':"cuda" if torch.cuda.is_available() else "cpu",
-                    'bind_addr':'0.0.0.0',
-                    'port':9880,
-                    'full_precision':False,
-                    'half_precision':False,
-                    'hubert_path':self.config.cnhubert_path,
-                    'bert_path':self.config.bert_path}
-
-        g_infer.load(self.config, self.dic_args)
-
-    def handle(self, refer_wav_path, prompt_text, prompt_language, text, text_language):
+    def private_tts(self, refer_wav_path, prompt_text, prompt_language, text, text_language):
         '''
         合成一句音频
         '''
@@ -79,8 +87,9 @@ class TtsTools:
         texts_in = SrtTools.get_instance().read_srt(in_srt_path, unit='frame', 
                                                 rate=tts_rate)
         texts_out = []
-        g_infer.load(self.config, self.dic_args)
-        #g_infer.hps.data.sampling_rate = rate # 设了没用
+        if USE_TTS != 'edge':
+            g_infer.load(self.config, self.dic_args)
+            #g_infer.hps.data.sampling_rate = rate # 设了没用
         pos = 0
         data = np.zeros(0)
 
@@ -91,7 +100,10 @@ class TtsTools:
                 silence = np.zeros(int(length))
                 data = np.concatenate([data, silence])
             if x['text'] != '< No Speech >':
-                self.handle(None, None, None, x['text'], 'zh')
+                if USE_TTS != 'edge':
+                    self.private_tts(None, None, None, x['text'], 'zh')
+                else:
+                    self.edge_tts(x['text'], TMP_WAV, language='zh-CN')
                 audio_data_1,r = sf.read(TMP_WAV)
             else:
                 audio_data_1 = np.zeros(int(x['end']-x['start']))
@@ -106,3 +118,23 @@ class TtsTools:
             resampled_data = resample(data, int(len(data) // scale))
         sf.write(out_mp3_path, resampled_data, rate, format="wav")
         SrtTools.get_instance().write_srt(texts_out, out_srt_path, rate=tts_rate, no_speech='keep')
+
+    def edge_tts(text, out_mp3_path, language = 'zh_CN', debug=False):
+        try:
+            if os.path.exists(out_mp3_path):
+                os.remove(out_mp3_path)
+            speed_delta = "+0%"            
+            if debug:
+                logger.debug(
+                    f"text {len(text)}, {text[:20]}, language {language}, speed {speed_delta}"
+                )
+            if language == "zh-CN":
+                VOICE = "zh-CN-YunxiNeural"
+            else:
+                VOICE = "en-GB-SoniaNeural"
+            communicate = edge_tts.Communicate(text, VOICE, rate=speed_delta)
+            communicate.save_sync(out_mp3_path)
+            return True, "synthesis_complete"
+        except Exception as e:
+            logger.warning(f"failed {e}")
+            return False, e
