@@ -2,9 +2,8 @@ ffmpeg-python==0.2.0
 moviepy==1.0.0
 pyloudnorm==0.1.1
 funasr==1.0.0
-torchaudio==2.4.1
+torchaudio==2.0.2+cu118
 modelscope==1.10.0
-pytorch-lightning==2.4.0
 loguru==0.7.2
 edge-tts==6.1.12
 numpy==1.23.5
