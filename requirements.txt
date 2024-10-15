@@ -1,0 +1,8 @@
+ffmpeg==1.4
+moviepy==1.0.0
+pyloudnorm==0.1.1
+funasr==1.0.0
+torch==2.4.1
+torchaudio==2.4.1
+modelscope==1.10.0
+pytorch-lightning
