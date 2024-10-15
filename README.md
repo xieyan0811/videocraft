@@ -1,10 +1,16 @@
 ### Linux 系统安装字体支持中文字幕
 
 ``` shell
-$ cp /opt/xieyan/tmp/240318/simsun.ttf /usr/share/fonts/truetype/
-$ cp /opt/xieyan/tmp/SourceHanSansSC-VF.ttf /usr/share/fonts/truetype/
+$ cp xxx/simsun.ttf /usr/share/fonts/truetype/
+$ cp xxx/SourceHanSansSC-VF.ttf /usr/share/fonts/truetype/
 $ fc-cache -v
 $ fc-list :lang=zh
+```
+
+### 安装支持工具
+
+``` shell
+$ apt-get install ffmpeg
 ```
 
 ### 程序列表
