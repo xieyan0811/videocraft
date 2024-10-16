@@ -1,6 +1,7 @@
 import os
 
-now_dir = os.path.dirname(os.path.abspath(__file__))
+# now_dir = os.path.dirname(os.path.abspath(__file__))
+now_dir = "/exports/"
 
 RATE=16000
 
