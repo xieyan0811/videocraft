@@ -7,7 +7,7 @@ import traceback
 import ffmpeg
 import numpy as np
 
-from slicer2 import Slicer
+from ve_slicer import Slicer
 from scipy.io import wavfile
 from ve_utils import SrtTools,get_media_info
 

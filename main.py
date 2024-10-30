@@ -6,24 +6,25 @@ from ve_clip import VideoTools
 from ve_utils import get_media_info, regular_audio
 import argparse
 
-def get_srt(input_path = mp4_input_path, output_path = srt_path_base):
+def get_srt(input_path, output_path):
     # 语音识别，生成 srt 文件
-    VideoSrt.get_instance().get_srt(input_path, output_path, md_path, 
+    VideoSrt.get_instance().get_srt(input_path, output_path, MD_OUT_PATH, 
                                     rate=RATE)
 
-def make_video(input_video_path = mp4_input_path, input_srt_path = srt_path_adj, 
-               output_video_path = mp4_output_path):
+def make_video(input_video_path, input_srt_path, 
+               output_video_path):
     ## 语音合成
+    mp3_path = TMP_AUDIO_PATH
     os.environ['TOKENIZERS_PARALLELISM'] = 'false'
     print('input_srt_path', input_srt_path)
-    TtsTools.get_instance().do_tts(input_srt_path, mp3_tmp_path, ADJ_SRT_PATH, rate=RATE)
-    print(get_media_info(mp3_tmp_path))
-    regular_audio(mp3_tmp_path, mp3_tmp_path)
-    print(get_media_info(mp3_tmp_path))
+    TtsTools.get_instance().do_tts(input_srt_path, mp3_path, SRT_OUT_PATH, rate=RATE)
+    print(get_media_info(mp3_path))
+    regular_audio(mp3_path, mp3_path)
+    print(get_media_info(mp3_path))
 
     ## 视频合成
-    VideoTools.get_instance().post_process(input_video_path, mp3_tmp_path, output_video_path, 
-                                    ADJ_SRT_PATH, force=True)
+    VideoTools.get_instance().post_process(input_video_path, mp3_path, output_video_path, 
+                                    SRT_OUT_PATH, force=True)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Video Editing')

@@ -1,24 +1,19 @@
 import os
 
-now_dir = os.path.dirname(os.path.abspath(__file__))
-
 RATE=16000
 
+now_dir = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(now_dir, 'data')
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
-
-srt_path_adj = os.path.join(DATA_DIR, 'tmp_modify.srt')
-srt_path_base = os.path.join(DATA_DIR, 'tmp.srt')
-md_path = os.path.join(DATA_DIR, 'txt.md')
-mp4_input_path = os.path.join(DATA_DIR, 'base.mp4')
-mp4_output_path = os.path.join(DATA_DIR, 'base_new.mp4')
-mp3_tmp_path = os.path.join(DATA_DIR, 'tmp.mp3')
-
-TMP_PATH = 'data/tmp/'
+TMP_PATH = os.path.join(now_dir, 'tmp')
 if not os.path.exists(TMP_PATH):
     os.mkdir(TMP_PATH)
-NO_EMPTY_SRT_PATH = os.path.join(TMP_PATH, 'no_empty.srt')
-ADJ_SRT_PATH = os.path.join(TMP_PATH, 'adj.srt')
-TMP_VIDEO_SRT_PATH = os.path.join(TMP_PATH, 'tmp_srt.mp4')
-TMP_VIDEO_MERGE_PATH = os.path.join(TMP_PATH, 'tmp_merge.mp4')
+
+MD_OUT_PATH = os.path.join(TMP_PATH, 'srt.md') # 从视频中识别的md格式的音频文字
+SRT_OUT_PATH = os.path.join(TMP_PATH, 'out.srt') # 根据tts调整后的srt
+TMP_AUDIO_PATH = os.path.join(DATA_DIR, 'tmp.mp3') # 中间生成的音频
+NO_EMPTY_SRT_PATH = os.path.join(TMP_PATH, 'no_empty.srt') # 去掉无声片段的srt
+TMP_VIDEO_SRT_PATH = os.path.join(TMP_PATH, 'tmp_srt.mp4') # 加了字幕的临时视频
+TMP_VIDEO_MERGE_PATH = os.path.join(TMP_PATH, 'tmp_merge.mp4') # 合并后的视频
+

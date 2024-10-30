@@ -64,8 +64,8 @@ class VideoTools:
                 print(idx, x['text'], x['start'], x['end'])
             clip = video.subclip(x['start'], x['end'])
             clips.append(clip)
-        final_clip = concatenate_videoclips(clips)
-        final_clip.write_videofile(output_path)
+        final_clip = concatenate_videoclips(clips, method="compose")
+        final_clip.write_videofile(output_path, audio_codec="aac")
     
     def post_process(self, video_input_path, audio_input_path, video_output_path, srt_path, force=False):
         '''
