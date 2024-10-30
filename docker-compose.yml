@@ -2,9 +2,11 @@ version: '3.8'
 
 services:
   videocraft:
-    image: videocraft:0.0.2
+    image: videocraft:241030
     container_name: videocraft
     volumes:
       - /exports:/exports
     tty: true
     command: bash
+    ports:
+        - "8822:22"
