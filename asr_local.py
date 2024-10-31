@@ -1,5 +1,6 @@
 import os
 import traceback
+from loguru import logger
 
 model = None
 
@@ -43,6 +44,7 @@ def do_asr(files):
         model = load_audio_model()
     arr = []
     for dic in files:
+        logger.debug(f"ASR: {dic['path']}")
         try:
             dic["text"] = model.generate(input=dic["path"])[0]["text"]
         except:

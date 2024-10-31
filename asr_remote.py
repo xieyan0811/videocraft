@@ -1,6 +1,7 @@
 import traceback
-from vc_config import *
 from openai import OpenAI
+from loguru import logger
+from vc_config import *
 
 
 def transcribe_audio(file_path, language=LANGUAGE_CODE):
@@ -15,6 +16,7 @@ def transcribe_audio(file_path, language=LANGUAGE_CODE):
 def do_asr(files):
     arr = []
     for dic in files:
+        logger.debug(f"ASR: {dic['path']}")
         try:
             dic["text"] = transcribe_audio(dic["path"])
         except:
