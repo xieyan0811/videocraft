@@ -2,12 +2,12 @@
 辅助工具
 '''
 
-import time
-from datetime import datetime
 import numpy as np
-from moviepy.editor import VideoFileClip, AudioFileClip
 from pyloudnorm import Meter, normalize
 import soundfile as sf
+import ffmpeg
+from pyloudnorm import Meter
+import pysrt
 
 class SrtTools:
     '''
@@ -21,37 +21,29 @@ class SrtTools:
             SrtTools._instance = SrtTools()
         return SrtTools._instance
 
-    def time_str_to_seconds(self, time_str):
-        print("xx", time_str)
-        time_obj = datetime.strptime(time_str, '%H:%M:%S,%f')
-        total_seconds = time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second + time_obj.microsecond / 1e6
-        return total_seconds
-
-    def read_srt(self, srt_path, unit = 'second', rate = None):
-        with open(srt_path, "r", encoding='utf-8') as f:
-            lines = f.readlines()
-            lines = [x.strip() for x in lines]
-            lines = [x for x in lines if x]
-            ret = []
-            for i in range(0, len(lines), 3):
-                if unit == 'second' or rate is None:
-                    dic = {
-                        'start': self.time_str_to_seconds(lines[i+1].split(' ')[0]),
-                        'end': self.time_str_to_seconds(lines[i+1].split(' ')[2]),
-                        'text': lines[i+2]
-                    }
-                else:
-                    dic = {
-                        'start': int(self.time_str_to_seconds(lines[i+1].split(' ')[0]) * rate),
-                        'end': int(self.time_str_to_seconds(lines[i+1].split(' ')[2]) * rate),
-                        'text': lines[i+2]
-                    }
-                ret.append(dic)
-            return ret
+    def read_srt(self, srt_path, unit='second', rate=None):
+        subs = pysrt.open(srt_path, encoding='utf-8')
+        ret = []
+        for sub in subs:
+            start_seconds = sub.start.hours * 3600 + sub.start.minutes * 60 + sub.start.seconds + sub.start.milliseconds / 1000
+            end_seconds = sub.end.hours * 3600 + sub.end.minutes * 60 + sub.end.seconds + sub.end.milliseconds / 1000
+            if unit == 'second' or rate is None:
+                dic = {
+                    'start': start_seconds,
+                    'end': end_seconds,
+                    'text': sub.text
+                }
+            else:
+                dic = {
+                    'start': int(start_seconds * rate),
+                    'end': int(end_seconds * rate),
+                    'text': sub.text
+                }
+            ret.append(dic)
+        return ret
 
     def merge_no_speech(self, texts):
         # 连续多个< No Speech >合并成一个
-        #print("before merge", texts)
         ret = []
         last = None
         for x in texts:
@@ -67,81 +59,111 @@ class SrtTools:
                 ret.append(x)
         if last is not None:
             ret.append(last)
-        #print("after merge", texts)
         return ret
 
-    def regular_text(self, text, char_per_line = -1):
+    def regular_text(self, text, char_per_line=-1):
         if text.endswith('。'):
             text = text[:-1]
         if text.find('\\n') != -1:
             return text
         if char_per_line > 0:
-            arr = []
-            for i in range(0, len(text), char_per_line):
-                arr.append(text[i:i+char_per_line])
+            arr = [text[i:i+char_per_line] for i in range(0, len(text), char_per_line)]
             text = '\\n'.join(arr)
         return text
 
-    def write_srt(self, texts, srt_path, rate, char_per_line = -1, no_speech = 'keep'):
+    def write_srt(self, texts, srt_path, rate=1, char_per_line=-1, no_speech='keep'):
         '''
         支持三种情况：
         1. 有语音，无空白，生成空白 no_speech: create
         2. 有语音，有空白，保留空白 no_speech: keep
         3. 有语音，有空白，去掉空白 no_speech: remove
         '''
+        subs = pysrt.SubRipFile()
         if no_speech == 'keep':
             texts = self.merge_no_speech(texts)
-        texts = self.merge_no_speech(texts)
         last = 0
         idx = 1
-        with open(srt_path, "w", encoding='utf-8') as f:
-            for dic in texts:
-                text = dic['text']
-                start = dic['start']/rate
-                end = dic['end']/rate
-                start_ms = int(start * 1000 % 1000)
-                end_ms = int(end *1000 % 1000)
-                if no_speech == 'create':
-                    if start > last and len(text) > 0:
-                        to = start
-                        to_ms = start_ms
-                        last_ms = int(last * 1000 % 1000)
-                        f.write(f"{idx}\n")
-                        idx+=1
-                        f.write(f"{time.strftime('%H:%M:%S', time.gmtime(last))},{str(last_ms).zfill(3)} --> {time.strftime('%H:%M:%S', time.gmtime(to))},{str(to_ms).zfill(3)}\n")
-                        f.write(f"< No Speech >\n\n")                    
-                if no_speech != 'remove' or text != '< No Speech >':
-                    text = self.regular_text(text, char_per_line)
-                    if len(text) > 0:
-                        f.write(f"{idx}\n")
-                        idx+=1
-                        f.write(f"{time.strftime('%H:%M:%S', time.gmtime(start))},{str(start_ms).zfill(3)} --> {time.strftime('%H:%M:%S', time.gmtime(end))},{str(end_ms).zfill(3)}\n")
-                        if len(text) > 0:
-                            f.write(f"{text}\n\n")
-                        last = end
-                    
+        for dic in texts:
+            text = dic['text']
+            start = dic['start'] / rate
+            end = dic['end'] / rate
+
+            # 将 start 和 end 转换为 SubRipTime
+            start_srt = pysrt.SubRipTime(seconds=int(start))
+            start_srt.milliseconds = int((start - int(start)) * 1000)
+            
+            end_srt = pysrt.SubRipTime(seconds=int(end))
+            end_srt.milliseconds = int((end - int(end)) * 1000)
+
+            if no_speech == 'create':
+                if start > last and len(text) > 0:
+                    no_speech_sub = pysrt.SubRipItem(
+                        index=idx,
+                        start=pysrt.SubRipTime(seconds=int(last)),
+                        end=start_srt,
+                        text='< No Speech >'
+                    )
+                    subs.append(no_speech_sub)
+                    idx += 1
+
+            if no_speech != 'remove' or text != '< No Speech >':
+                text = self.regular_text(text, char_per_line)
+                if text:
+                    sub = pysrt.SubRipItem(
+                        index=idx,
+                        start=start_srt,
+                        end=end_srt,
+                        text=text
+                    )
+                    subs.append(sub)
+                    idx += 1
+                last = end
+
+        # 写入文件
+        subs.save(srt_path, encoding='utf-8')
+        
 def get_media_info(path):
     '''
     获取视频或音频的信息
     '''
     ret = {}
-    if path.endswith('.mp3'):
-        clip = AudioFileClip(path)
-        ret['audio_sample_rate'] = clip.fps
-        audio = clip
-    else:
-        clip = VideoFileClip(path)
-        audio = clip.audio
-        width, height = clip.size
-        ret['width'] = width
-        ret['height'] = height
-        ret['audio_sample_rate'] = clip.audio.fps
-    audio_arr = audio.to_soundarray(fps=22000)
-    if len(audio_arr.shape) > 1:
-        audio_arr = np.mean(audio_arr, axis=1)
-    meter = Meter(rate=22000)  # 使用与音频相同的采样率
-    ret['loudness'] = meter.integrated_loudness(audio_arr)
-    ret['duration'] = clip.duration
+
+    # 获取基本信息
+    probe = ffmpeg.probe(path)
+    format_info = probe.get('format', {})
+    duration = float(format_info.get('duration', 0))
+    ret['duration'] = duration
+
+    # 获取音频和视频流信息
+    audio_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'audio'), None)
+    video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
+
+    # 处理音频信息
+    if audio_stream:
+        ret['audio_sample_rate'] = int(audio_stream['sample_rate'])
+        
+        # 提取音频数据
+        out, _ = (
+            ffmpeg
+            .input(path)
+            .output('pipe:', format='wav', acodec='pcm_s16le', ar=22000)
+            .run(capture_stdout=True, capture_stderr=True)
+        )
+        
+        # 将音频数据转换为数组
+        audio_arr = np.frombuffer(out, np.int16).astype(np.float32) / 32768.0
+        if audio_stream.get('channels', 1) > 1:
+            audio_arr = audio_arr.reshape(-1, 2).mean(axis=1)
+        
+        # 计算响度
+        meter = Meter(rate=22000)  # 使用 22000 Hz 的采样率
+        ret['loudness'] = meter.integrated_loudness(audio_arr)
+    
+    # 处理视频信息
+    if video_stream:
+        ret['width'] = int(video_stream['width'])
+        ret['height'] = int(video_stream['height'])
+    
     return ret
 
 def regular_audio(in_path, out_path, target_loudness=-20.0):

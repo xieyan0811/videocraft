@@ -3,9 +3,9 @@ import torch
 import soundfile as sf
 import numpy as np
 from loguru import logger
-
 from scipy.signal import resample
 from ve_utils import SrtTools
+from ve_config import *
 
 USE_TTS = 'edge' # later move to config
 
@@ -15,8 +15,6 @@ else:
     import config as global_config
     from command.inference import get_tts_wav, g_infer # 时间很长，后面优化 (g_infer)
     
-
-TMP_WAV = '/tmp/output.wav'
 
 class TtsTools:
     _instance = None
@@ -71,7 +69,7 @@ class TtsTools:
             )
             sampling_rate, audio_data = next(gen)
 
-        sf.write(TMP_WAV, audio_data, sampling_rate, format="wav")
+        sf.write(TMP_WAV_PATH, audio_data, sampling_rate, format="wav")
         torch.cuda.empty_cache()
         if self.dic_args['device'] == "mps":
             print('executed torch.mps.empty_cache()')
@@ -82,7 +80,6 @@ class TtsTools:
         生成音频
         '''
         tts_rate = 32000 # 先以 tts_rate 为基准构建音频
-        scale = tts_rate / rate
         texts_in = SrtTools.get_instance().read_srt(in_srt_path, unit='frame', 
                                                 rate=tts_rate)
         texts_out = []
@@ -94,16 +91,19 @@ class TtsTools:
 
         for x in texts_in:
             length = (x['start'] - pos)
-            #print("@@@@@@@@@@@@@@@@@@@@@@@", x['text'], x['start'], x['end'], pos)
             if length > 0:
                 silence = np.zeros(int(length))
                 data = np.concatenate([data, silence])
-            if x['text'] != '< No Speech >':
+            plain_text = x['text']
+            plain_text = plain_text.replace('\\n', '')
+            #print("@@@@@@@@@@@@@@@@@@@@@@@", plain_text, x['start'], x['end'], pos)
+            if plain_text != '< No Speech >':
                 if USE_TTS != 'edge':
-                    self.private_tts(None, None, None, x['text'], 'zh')
+                    self.private_tts(None, None, None, plain_text, 'zh')
                 else:
-                    self.edge_tts(x['text'], TMP_WAV, language='zh-CN')
-                audio_data_1,r = sf.read(TMP_WAV)
+                    self.edge_tts(plain_text, TMP_MP3_PATH, language='zh-CN')
+                self.convert_sample_rate(TMP_MP3_PATH, TMP_WAV_PATH, tts_rate)
+                audio_data_1, _ = sf.read(TMP_WAV_PATH)
             else:
                 audio_data_1 = np.zeros(int(x['end']-x['start']))
             pos_start = len(data)
@@ -114,6 +114,7 @@ class TtsTools:
             print("####", (x['start'] + int(len(audio_data_1))), pos)
         
         if rate != tts_rate:
+            scale = tts_rate / rate
             resampled_data = resample(data, int(len(data) // scale))
         sf.write(out_mp3_path, resampled_data, rate, format="wav")
         SrtTools.get_instance().write_srt(texts_out, out_srt_path, rate=tts_rate, no_speech='keep')
@@ -131,9 +132,24 @@ class TtsTools:
                 VOICE = "zh-CN-YunxiNeural"
             else:
                 VOICE = "en-GB-SoniaNeural"
-            communicate = edge_tts.Communicate(text, VOICE, rate=speed_delta)
+            # later adjust 241030
+            communicate = edge_tts.Communicate(text, VOICE, rate=speed_delta, proxy=HTTP_PROXY) 
             communicate.save_sync(out_mp3_path)
             return True, "synthesis_complete"
         except Exception as e:
             logger.warning(f"failed {e}")
             return False, e
+
+    def convert_sample_rate(self, input_path, output_path, target_sample_rate=16000):
+        # 读取文件
+        data, original_sample_rate = sf.read(input_path)
+
+        # 计算重采样所需的样本数量
+        num_samples = int(len(data) * target_sample_rate / original_sample_rate)
+
+        # 重采样
+        resampled_data = resample(data, num_samples)
+
+        # 将重采样后的数据写入目标文件
+        sf.write(output_path, resampled_data, target_sample_rate)
+        print(f"文件已成功转换为采样率 {target_sample_rate} 并保存至 {output_path}")        

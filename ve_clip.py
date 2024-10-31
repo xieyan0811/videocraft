@@ -1,8 +1,50 @@
 import ffmpeg
-from moviepy.editor import *
 from ve_utils import SrtTools
 from ve_config import *
+import srt
 
+class VideoCutter:
+    def __init__(self, input_path, srt_file, output_path):
+        self.input_path = input_path
+        self.srt_file = srt_file
+        self.output_path = output_path
+
+    def read_srt_intervals(self):
+        # 从srt文件解析时间片段
+        with open(self.srt_file, 'r', encoding='utf-8') as f:
+            subtitles = list(srt.parse(f))
+        intervals = [(sub.start.total_seconds(), sub.end.total_seconds()) for sub in subtitles]
+        return intervals
+
+    def do_cut(self, debug=True):
+        # 获取srt的时间片段
+        intervals = self.read_srt_intervals()
+        output_clips = []
+        
+        for idx, (start, end) in enumerate(intervals):
+            # 生成每个剪辑片段的文件路径
+            clip_output = os.path.join(DATA_DIR, f"clip_{idx}.mp4")
+            if debug:
+                print(f"Processing clip {idx}: {start} to {end}")
+                
+            # 使用ffmpeg切割视频片段
+            (
+                ffmpeg
+                .input(self.input_path, ss=start, to=end)
+                .output(clip_output, vcodec='libx264', acodec='aac')
+                .run(overwrite_output=True)
+            )
+            output_clips.append(clip_output)
+
+        # 将所有视频片段合并
+        concat_file = os.path.join(DATA_DIR, 'concat_list.txt')
+        with open(concat_file, 'w') as f:
+            for clip in output_clips:
+                f.write(f"file '{clip}'\n")
+
+        ffmpeg.input(concat_file, format='concat', safe=0).output(self.output_path, c='copy').run(overwrite_output=True)
+        print(f"Final output saved as {self.output_path}")
+        
 class VideoTools:
     '''
     视频后期处理
@@ -51,21 +93,13 @@ class VideoTools:
         stream.global_args('-loglevel', 'error')
         ffmpeg.run(stream, capture_stdout=True, capture_stderr=True)
 
-    def do_cut(self, input_path, output_path, srt_file, debug=True):
+    def do_cut(self, input_video, output_video, srt_file, debug=True):
         '''
         去除无声片断
         (太长的视频，需要分段存储，后面再说)
         '''
-        video = VideoFileClip(input_path)    
-        texts = SrtTools.get_instance().read_srt(srt_file, unit='second')
-        clips = []
-        for idx,x in enumerate(texts):
-            if debug:
-                print(idx, x['text'], x['start'], x['end'])
-            clip = video.subclip(x['start'], x['end'])
-            clips.append(clip)
-        final_clip = concatenate_videoclips(clips, method="compose")
-        final_clip.write_videofile(output_path, audio_codec="aac")
+        cutter = VideoCutter(input_video, srt_file, output_video)
+        cutter.do_cut()
     
     def post_process(self, video_input_path, audio_input_path, video_output_path, srt_path, force=False):
         '''

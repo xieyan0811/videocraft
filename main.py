@@ -14,7 +14,7 @@ def get_srt(input_path, output_path):
 def make_video(input_video_path, input_srt_path, 
                output_video_path):
     ## 语音合成
-    mp3_path = TMP_AUDIO_PATH
+    mp3_path = TMP_MP3_PATH
     os.environ['TOKENIZERS_PARALLELISM'] = 'false'
     print('input_srt_path', input_srt_path)
     TtsTools.get_instance().do_tts(input_srt_path, mp3_path, SRT_OUT_PATH, rate=RATE)

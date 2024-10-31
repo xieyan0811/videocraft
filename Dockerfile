@@ -23,4 +23,4 @@ ARG IMAGE_TYPE=full
 
 COPY . /workspace
 
-CMD ["sleep", "10000"]
+CMD ["/usr/sbin/sshd", "-D"]
