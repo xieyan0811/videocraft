@@ -1,8 +1,12 @@
 ffmpeg-python==0.2.0
 pyloudnorm==0.1.1
-funasr==1.0.0
-torchaudio==2.0.2+cu118
-modelscope==1.10.0
-loguru==0.7.2
-edge-tts==6.1.12
+loguru==0.6.0
+edge-tts==6.1.15
 numpy==1.23.5
+pysrt==1.1.2
+openai==1.18.0
+
+# if use local TTS/ASR model open it
+#funasr==1.0.0
+#torchaudio==2.0.2+cu118
+#modelscope==1.10.0
