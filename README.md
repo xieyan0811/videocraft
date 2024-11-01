@@ -1,61 +1,73 @@
 English | [中文简体](./README_cn.md)
 
+# VideoCraft
+
+> Simplify the Process, Accelerate Creativity, Ignite Your Passion! ❇️
+
 ## Introduction
 
 ### Features
 
-This is a video editing software that utilizes voice recognition, speech synthesis, and video editing technologies to automatically optimize issues like accent, stuttering, and errors in speech within videos, producing high-quality videos.
+This is a video editing software that automatically enhances videos by optimizing accents, stutters, and mistakes through speech recognition, speech synthesis, and video editing technologies, producing high-quality videos.
 
 ### Use Cases
 
-When recording videos, we often encounter issues such as accents, stuttering, or incorrect content spoken by the recorder. To achieve a satisfactory final product, multiple takes are often required, which is time-consuming and labor-intensive. Sometimes, video editing software is needed, which adds to the learning curve.
+#### Scenario 1
 
-This software can be viewed as a video optimization tool that automates some editing functions using technologies like voice recognition, speech synthesis, and video editing, thereby simplifying the video production process.
+When recording videos, issues like accents, stuttering, or verbal slips often arise. Achieving a satisfactory result typically requires multiple recordings, which is time-consuming and demanding. Additionally, using video editing software may increase the learning curve.
 
-* Users can automatically recognize the audio content in a video and generate corresponding subtitles through commands;
-* Users can manually edit the generated subtitles to correct errors or parts that are not smooth;
-* By using commands again, users can regenerate audio using the corrected subtitles and combine the original video, corrected subtitles, and new audio while removing unnecessary non-audio segments, resulting in a new, optimized video.
+#### Scenario 2
+
+Some creators may be dissatisfied with their voices or wish to use a more stable or unique voice. This tool helps achieve voice replacement with ease.
+
+#### Scenario 3
+
+This tool also serves as a simple solution for translating videos, converting Chinese videos into English ones and automatically adding subtitles.
+
+While many may lack proficiency in English, this tool leverages natural language models to address this challenge. The workflow is as follows: extract text from the Chinese video and generate an SRT subtitle file; translate the SRT using an LLM while maintaining its format; finally, synthesize new English audio with the original video and English subtitles to create a new English video.
+
+#### Solution
+
+The video optimization tool leverages advanced speech recognition, speech synthesis, and video editing technologies to automate parts of the editing process, simplifying various aspects of video production.
+
+* Automatically recognizes spoken content in videos and generates subtitles;
+* Allows users to manually correct or translate subtitles to ensure content accuracy and fluency;
+* Regenerates audio using corrected subtitles, removes unnecessary silent segments, and composes an optimized video with subtitles.
+
+### Principle
+
+For video editing, we primarily use the ffmpeg toolset.
+
+For speech recognition and synthesis, we use tools from OpenAI and Microsoft, supporting online synthesis and recognition. These tools are easy to configure, have a low learning curve, and require minimal local resources. We also support local deployment of deep learning models like FunASR and GPT_SoVITS, saving on online synthesis costs and allowing for custom voice features.
+
+For small conversion needs, consider using OpenAI's TTS (Text-to-Speech) or ASR (Automatic Speech Recognition) services; for larger conversions, consider setting up local ASR and TTS services for better performance.
 
 ## Usage
 
 ### Installation
 
-It is recommended to install using Docker.
+Installation via Docker is recommended.
 
 ```shell
 $ git clone https://github.com/xieyan0811/videocraft
 $ cd videocraft
-# Modify requirements.txt if you need to set up a local voice recognition/synthesis model
-$ docker build . -t videocraft:xxx # Please adjust the image name in docker-compose.yml accordingly
+# To set up local speech recognition/synthesis models, modify requirements.txt and Dockerfile
+$ docker build . -t videocraft:xxx # Adjust the image name in docker-compose.yml accordingly
 $ docker-compose up -d
 ```
 
-### How to Use
+### Usage
 
 ``` shell
 $ cp default_env .env
 # Set environment variables as needed
 $ python main.py -g -v xxx.mp4 -o data/tmp.srt # Extract subtitles
-# Manually edit subtitles, if subtitles need to be translated, ensure to set the appropriate LANGUAGE_CODE environment variable
-$ python main.py -m -v xxx.mp4 -s data/tmp.srt -o data/8da.mp4 # Merge video, subtitles, replace audio, remove blank segments
+# Manually edit subtitles; set the appropriate LANGUAGE_CODE environment variable if translation is needed
+$ python main.py -m -v xxx.mp4 -s data/tmp.srt -o data/8da.mp4 # Merge video, subtitles, replace audio, and remove blank segments
 ```
 
-## Program Description
+## Notes
 
-### Program List
-
-* main.py - Program entry
-* tts.py - Speech synthesis
-* ve_slicer.py - Audio slicing
-* ve_asr.py - Subtitle recognition
-* ve_clip.py - Video synthesis
-* ve_config.py - Configuration file
-* ve_utils.py - Support tools for subtitles, etc.
-
-### Notes
-
-* During recording, please pay attention to controlling speech speed to ensure clarity.
-* When using edge_tts in mainland China, a proxy is required; otherwise, a 403 error may occur.
-* For testing, it is recommended to start with a short video to ensure no issues before converting the official long video.
-* If the conversion volume is small, it is recommended to use OpenAI's TTS or ASR services, as the configuration is relatively simple.
-* If the conversion volume is large, it is recommended to set up local ASR and TTS services, which, although complicated, provide better results.
+* Control speaking speed during recording to ensure the content is clear and understandable.
+* When using edge_tts in mainland China, set up a proxy to avoid a 403 error.
+* It is advisable to test with short videos initially and confirm success before processing full videos.
