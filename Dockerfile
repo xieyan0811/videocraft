@@ -1,4 +1,5 @@
-FROM cnstark/pytorch:2.0.1-py3.9.17-cuda11.8.0-ubuntu20.04
+#FROM cnstark/pytorch:2.0.1-py3.9.17-cuda11.8.0-ubuntu20.04 # if need local ASR/TTS, use it
+FROM python:3.11
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC

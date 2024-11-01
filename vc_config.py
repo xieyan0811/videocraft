@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 RATE = os.environ.get("RATE", 16000)
-RATE = int(RATE) if RATE.isdigit() else 16000
+RATE = int(RATE) if isinstance(RATE, str) and RATE.isdigit() else RATE
 TTS_MODEL = os.environ.get("TTS_MODEL", "openai")  # edge/openai/local
 ASR_MODEL = os.environ.get("ASR_MODEL", "remote")  # local/openai
 LANGUAGE_CODE = os.environ.get("LANGUAGE_CODE", "zh-CN")

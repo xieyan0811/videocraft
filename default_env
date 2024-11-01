@@ -1,6 +1,7 @@
 OPENAI_API_KEY="sk-"
 #HTTP_PROXY="http://ip:port"
+#HTTPS_PROXY="http://ip:port"
 TTS_MODEL="edge"
 ASR_MODEL="openai"
 RATE=16000
-LANGUAGE_CODE="zh-CN"
+LANGUAGE_CODE="zh" # zh/en
