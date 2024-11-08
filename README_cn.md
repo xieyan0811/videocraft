@@ -22,7 +22,7 @@
 
 这还是一个用于视频翻译的简洁工具，能够将中文视频转换为英文视频并自动添加字幕。
 
-许多人可能不具备熟练的英语说写能力，但通过结合自然语言模型，使用本工具即可轻松解决此难题。工作流程如下：首先提取中文视频中的文字并生成 SRT 字幕文件；然后借助 LLM 在保持格式的同时翻译 SRT；最终，将生成的新英文语音与原视频、英文字幕合成为全新的英文视频。
+很多人可能不具备熟练的英语说写能力，但通过结合自然语言模型，使用本工具即可轻松解决此难题。工作流程如下：首先提取中文视频中的文字并生成 SRT 字幕文件；然后借助 LLM 在保持格式的同时翻译 SRT；最终，将生成的新英文语音与原视频、英文字幕合成为全新的英文视频。
 
 #### 解决方案
 
@@ -30,7 +30,7 @@
 
 * 自动识别视频语音内容并生成字幕；
 * 允许用户手动修正或翻译字幕，保证内容准确流畅；
-* 使用修正后的字幕再次生成语音，去除多余的静音片段，最终合成带字幕的优化视频。
+* 使用修正后的字幕再次生成语音，去除多余的静音片段，调节音量，最终合成带字幕的优化视频。
 
 ### 原理
 
@@ -40,9 +40,9 @@
 
 如果转换量较小，建议使用 OpenAI 的 TTS（文本到语音转换）或 ASR（自动语音识别）服务；如果转换量较大，请考虑自行搭建本地的 ASR 和 TTS 服务，以获取更佳的效果。
 
-## 使用方法
+## 使用
 
-### 安装方法
+### 安装
 
 建议通过 docker 安装使用
 
@@ -50,13 +50,17 @@
 $ git clone https://github.com/xieyan0811/videocraft
 $ cd videocraft
 # 如需在搭建本地语音识别/合成模型，请修改 requirements.txt 和 Dockerfile
-$ docker build . -t videocraft:xxx # 请调整 docker-composite.yml 中对应的镜像名
+$ docker build . -t videocraft:xxx 
+# 编辑 docker-composite.yml，修改新镜像名及volume路径
 $ docker-composite up -d
 ```
 
-### 使用方法
+运行后服务器中存在一个 6GB 左右的 `videocraft:xxx` 镜像
+
+### 调用
 
 ``` shell
+$ docker exec -it videocraft bash # 进入容器
 $ cp default_env .env
 # 按需设置环境变量
 $ python main.py -g -v xxx.mp4 -o data/tmp.srt # 提取字幕
@@ -69,3 +73,7 @@ $ python main.py -m -v xxx.mp4 -s data/tmp.srt -o data/8da.mp4 # 合并视频，
 * 录音时请注意控制语速，确保内容清晰易懂。
 * 在中国大陆使用 edge_tts 时，请设置代理以避免 403 错误。
 * 建议先用短视频进行测试，确认无误后再处理正式长视频。
+
+## 许可证
+
+此项目是根据 MIT 许可证授权的。有关详细信息，请参阅 [LICENSE](./LICENSE) 文件。

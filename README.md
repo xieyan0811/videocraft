@@ -18,7 +18,7 @@ When recording videos, issues like accents, stuttering, or verbal slips often ar
 
 #### Scenario 2
 
-Some creators may be dissatisfied with their voices or wish to use a more stable or unique voice. This tool helps achieve voice replacement with ease.
+Some authors may be dissatisfied with their voices or wish to use a more stable or unique voice. This tool helps achieve voice replacement with ease.
 
 #### Scenario 3
 
@@ -52,13 +52,15 @@ Installation via Docker is recommended.
 $ git clone https://github.com/xieyan0811/videocraft
 $ cd videocraft
 # To set up local speech recognition/synthesis models, modify requirements.txt and Dockerfile
-$ docker build . -t videocraft:xxx # Adjust the image name in docker-compose.yml accordingly
+$ docker build . -t videocraft:xxx 
+# Edit docker-compose.yml to modify the new image name and volume path
 $ docker-compose up -d
 ```
 
 ### Usage
 
 ``` shell
+$ docker exec -it videocraft bash # Enter the container
 $ cp default_env .env
 # Set environment variables as needed
 $ python main.py -g -v xxx.mp4 -o data/tmp.srt # Extract subtitles
@@ -71,3 +73,8 @@ $ python main.py -m -v xxx.mp4 -s data/tmp.srt -o data/8da.mp4 # Merge video, su
 * Control speaking speed during recording to ensure the content is clear and understandable.
 * When using edge_tts in mainland China, set up a proxy to avoid a 403 error.
 * It is advisable to test with short videos initially and confirm success before processing full videos.
+
+## License
+
+This project is licensed under the MIT License. For more details, please refer to the [LICENSE](./LICENSE) file.
+
