@@ -1,16 +1,34 @@
 import traceback
+import os
 from openai import OpenAI
 from loguru import logger
 from vc_config import *
+import httpx
 
 
 def transcribe_audio(file_path, language=LANGUAGE_CODE):
-    client = OpenAI()
-    with open(file_path, "rb") as audio_file:
-        response = client.audio.transcriptions.create(
-            model="whisper-1", file=audio_file, language=language
+    # 从环境变量获取代理设置
+    http_proxy = os.getenv('HTTP_PROXY')
+    https_proxy = os.getenv('HTTPS_PROXY')
+    
+    client = OpenAI(
+        http_client=httpx.Client(
+            proxies={
+                "http://": http_proxy,
+                "https://": https_proxy
+            } if http_proxy and https_proxy else None
         )
-    return response.text
+    )
+    
+    try:
+        with open(file_path, "rb") as audio_file:
+            response = client.audio.transcriptions.create(
+                model="whisper-1", file=audio_file, language=language
+            )
+        return response.text
+    except Exception as e:
+        logger.error(f"Transcription error: {str(e)}")
+        raise
 
 
 def do_asr(files):
