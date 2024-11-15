@@ -49,13 +49,21 @@
 ```shell
 $ git clone https://github.com/xieyan0811/videocraft
 $ cd videocraft
-# 如需在搭建本地语音识别/合成模型，请修改 requirements.txt 和 Dockerfile
-$ docker build . -t videocraft:xxx 
-# 编辑 docker-composite.yml，修改新镜像名及volume路径
-$ docker-composite up -d
 ```
 
-运行后服务器中存在一个 6GB 左右的 `videocraft:xxx` 镜像
+请先修改再运行
+
+1. **`videocraft/Dockerfile`**: 使用代理或国内镜像源，缩短安装时间。
+2. **`videocraft/docker-compose.yml`**: 自定义镜像名及volume路径。
+3. **`videocraft/default_env`**: 在中国大陆使用 `edge_tts` 时，设置代理以防止 403 错误。
+4. 如需在搭建本地语音识别/合成模型，请修改 requirements.txt (可选)
+
+``` shell
+$ docker build . -t videocraft:xxx 
+$ docker-compose up -d
+```
+
+运行后服务器中存在一个不到2G 的 `videocraft:xxx` 镜像
 
 ### 调用
 
@@ -71,8 +79,12 @@ $ python main.py -m -v xxx.mp4 -s data/tmp.srt -o data/8da.mp4 # 合并视频，
 ## 注意事项
 
 * 录音时请注意控制语速，确保内容清晰易懂。
-* 在中国大陆使用 edge_tts 时，请设置代理以避免 403 错误。
 * 建议先用短视频进行测试，确认无误后再处理正式长视频。
+* 路径说明
+    **输入**：自定义原始视频路径，运行首个命令时指定。
+    **输出**：
+        首个命令生成字幕文件，存放于 `data/tmp.srt`。
+        第二个命令生成配音视频，存放于 `data/8da.mp4`。
 
 ## 许可证
 
