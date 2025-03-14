@@ -1,5 +1,6 @@
 import os
 import traceback
+import os
 from openai import OpenAI
 from loguru import logger
 from vc_config import *
@@ -13,7 +14,6 @@ def transcribe_audio(file_path, language=LANGUAGE_CODE):
 
     try:
         client = OpenAI(api_key=api_key, base_url=url)
-
         with open(file_path, "rb") as audio_file:
             response = client.audio.transcriptions.create(
                 model="whisper-1", file=audio_file, language=language

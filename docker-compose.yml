@@ -7,7 +7,6 @@ services:
     volumes:
       - /exports:/exports
     tty: true
-    command: bash
     ports:
         - "8822:22"
     command: ["/usr/sbin/sshd", "-D"]
