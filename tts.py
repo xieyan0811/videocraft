@@ -34,7 +34,7 @@ class TtsTools:
         pos = 0
         data = np.zeros(0)
 
-        for x in texts_in:
+        for idx, x in enumerate(texts_in):
             length = x["start"] - pos
             if length > 0:
                 silence = np.zeros(int(length))
@@ -44,12 +44,15 @@ class TtsTools:
             # print(f"{plain_text} {x['start']}, {x['end']}, {pos}")
             if plain_text != "< No Speech >":
                 if TTS_MODEL == "local":
-                    tts_local.do_tts(
+                    ret, desc = tts_local.do_tts(
                         None, None, None, plain_text, language=LANGUAGE_CODE
                     )
                 else:
-                    tts_remote.do_tts(plain_text, TMP_MP3_PATH, language=LANGUAGE_CODE)
-                self.convert_sample_rate(TMP_MP3_PATH, TMP_WAV_PATH, rate)
+                    ret, desc = tts_remote.do_tts(plain_text, TMP_MP3_PATH, language=LANGUAGE_CODE)
+                if not ret:
+                    logger.warning(f"failed to tts: {ret} {desc} {plain_text} {x['start']}, {x['end']}, {pos}")
+                    continue
+                self.convert_sample_rate(TMP_MP3_PATH, TMP_WAV_PATH, rate, idx=idx)
                 audio_data_1, _ = sf.read(TMP_WAV_PATH)
             else:
                 audio_data_1 = np.zeros(int(x["end"] - x["start"]))
@@ -64,9 +67,9 @@ class TtsTools:
             texts_out, out_srt_path, rate=rate, no_speech="keep"
         )
 
-    def convert_sample_rate(self, input_path, output_path, target_sample_rate=16000):
+    def convert_sample_rate(self, input_path, output_path, target_sample_rate=16000, idx=0):
         data, original_sample_rate = sf.read(input_path)
         num_samples = int(len(data) * target_sample_rate / original_sample_rate)
         resampled_data = resample(data, num_samples)
         sf.write(output_path, resampled_data, target_sample_rate)
-        logger.debug(f"convert rate: {target_sample_rate}, and dave to: {output_path}")
+        logger.debug(f"{idx} convert rate: {target_sample_rate}, and save to: {output_path}")

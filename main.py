@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from loguru import logger
 from vc_config import *
 from asr import VideoSrt
@@ -42,6 +43,8 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
+    env_path = ".env"
+    load_dotenv(env_path, override=True)    
     args = parse_arguments()
     if args.get_srt:
         get_srt(args.video, args.output)

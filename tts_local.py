@@ -58,7 +58,7 @@ def do_tts(refer_wav_path, prompt_text, prompt_language, text, text_language):
             g_infer.model_info.language,
         )
         if not g_infer.model_info.is_ready():
-            return None
+            return False, None
 
     text = text.replace("\\n", "")
     with torch.no_grad():
@@ -72,3 +72,4 @@ def do_tts(refer_wav_path, prompt_text, prompt_language, text, text_language):
     if local_dic_args["device"] == "mps":
         logger.debug("executed torch.mps.empty_cache()")
         torch.mps.empty_cache()
+    return True, None

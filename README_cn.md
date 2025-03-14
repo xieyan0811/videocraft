@@ -52,7 +52,7 @@ $ cd videocraft
 # 如需在搭建本地语音识别/合成模型，请修改 requirements.txt 和 Dockerfile
 $ docker build . -t videocraft:xxx 
 # 编辑 docker-composite.yml，修改新镜像名及volume路径
-$ docker-composite up -d
+$ docker-compose up -d
 ```
 
 运行后服务器中存在一个 6GB 左右的 `videocraft:xxx` 镜像
@@ -77,3 +77,7 @@ $ python main.py -m -v xxx.mp4 -s data/tmp.srt -o data/8da.mp4 # 合并视频，
 ## 许可证
 
 此项目是根据 MIT 许可证授权的。有关详细信息，请参阅 [LICENSE](./LICENSE) 文件。
+
+## 示例视频
+
+[B站视频链接](https://www.bilibili.com/video/BV18ZQuY2ETP/)

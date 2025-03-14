@@ -78,3 +78,6 @@ $ python main.py -m -v xxx.mp4 -s data/tmp.srt -o data/8da.mp4 # Merge video, su
 
 This project is licensed under the MIT License. For more details, please refer to the [LICENSE](./LICENSE) file.
 
+## Demo
+
+[Example Video](https://www.bilibili.com/video/BV1mAQgYVE2S/)

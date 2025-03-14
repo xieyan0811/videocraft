@@ -7,6 +7,8 @@ from openai import OpenAI
 
 
 def do_tts(text, out_path, language, debug=False):
+    if text == "" or text is None:
+        return False, "text is empty"
     try:
         if os.path.exists(out_path):
             os.remove(out_path)
@@ -14,6 +16,7 @@ def do_tts(text, out_path, language, debug=False):
             do_tts_edge(text, out_path, language, debug)
         else:
             do_tts_openai(text, out_path)
+        return True, None
     except Exception as e:
         logger.warning(f"failed {e}")
         return False, e
