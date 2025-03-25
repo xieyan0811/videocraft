@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from loguru import logger
+import subprocess
 from vc_config import *
 from asr import VideoSrt
 from tts import TtsTools
@@ -19,7 +20,22 @@ def make_video(input_video_path, input_srt_path, output_video_path):
     mp3_path = TMP_MP3_PATH
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     logger.info(f"do_tts, input_srt_path {input_srt_path}")
-    TtsTools.get_instance().do_tts(input_srt_path, mp3_path, SRT_OUT_PATH, rate=RATE)
+
+    # When TTS_MODEL is "original", extract the original audio and pass it to do_tts
+    original_audio_path = None
+    if TTS_MODEL == "original":
+        # Extract original audio
+        original_audio_path = os.path.join(TMP_PATH, "original_audio.wav")
+        subprocess.run([
+            "ffmpeg", "-y", "-i", input_video_path, 
+            "-q:a", "0", "-map", "a", original_audio_path
+        ], check=True)
+    
+    # Pass the original audio path to do_tts
+    TtsTools.get_instance().do_tts(
+        input_srt_path, mp3_path, SRT_OUT_PATH, rate=RATE, original_audio_path=original_audio_path
+    )
+    
     logger.info(f"{get_media_info(mp3_path)}")
     regular_audio(mp3_path, mp3_path)
     logger.info(f"{get_media_info(mp3_path)}")
@@ -43,8 +59,9 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
-    env_path = ".env"
-    load_dotenv(env_path, override=True)    
+
+    logger.info(f"TTS_MODEL: {TTS_MODEL}")
+    logger.info(f"ASR_MODEL: {ASR_MODEL}")
     args = parse_arguments()
     if args.get_srt:
         get_srt(args.video, args.output)
