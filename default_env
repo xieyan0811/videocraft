@@ -2,10 +2,13 @@ OPENAI_API_KEY="sk-"
 OPENAI_BASE_URL=""
 #HTTP_PROXY="http://ip:port"
 #HTTPS_PROXY="http://ip:port"
-TTS_MODEL="edge"
+
+# "original", "local", "openai", "edge"
+TTS_MODEL="original"
 ASR_MODEL="openai"
 RATE=16000
-LANGUAGE_CODE="zh" # zh/en
+# zh-CN/en
+LANGUAGE_CODE="zh-CN" 
 
 # Time zone setting
 TIMEZONE='Asia/Shanghai'

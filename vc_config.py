@@ -5,9 +5,9 @@ load_dotenv()
 
 RATE = os.environ.get("RATE", 16000)
 RATE = int(RATE) if isinstance(RATE, str) and RATE.isdigit() else RATE
-TTS_MODEL = os.environ.get("TTS_MODEL", "openai")  # edge/openai/local
+TTS_MODEL = os.environ.get("TTS_MODEL", "openai")  # edge/openai/local/original
 ASR_MODEL = os.environ.get("ASR_MODEL", "remote")  # local/openai
-LANGUAGE_CODE = os.environ.get("LANGUAGE_CODE", "zh-CN")
+LANGUAGE_CODE = os.environ.get("LANGUAGE_CODE", "zh") # zh/en
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.environ.get("DATA_DIR", os.path.join(current_dir, "data"))
