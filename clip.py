@@ -107,6 +107,19 @@ class VideoTools:
         stream.global_args("-loglevel", "error")
         ffmpeg.run(stream, capture_stdout=True, capture_stderr=True)
 
+    def extract_audio(self, video_path, audio_path, force=False):
+        """
+        Extract audio from video
+        """
+        if os.path.exists(audio_path) and not force:
+            return
+            
+        input_video = ffmpeg.input(video_path)
+        audio_stream = input_video.audio
+        stream = ffmpeg.output(audio_stream, audio_path, q='0')
+        stream.global_args("-loglevel", "error", "-y")
+        ffmpeg.run(stream, capture_stdout=True, capture_stderr=True)
+
     def do_cut(self, input_video, output_video, srt_file, debug=True):
         """
         Remove silent segments from video based on SRT file

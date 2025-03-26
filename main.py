@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from loguru import logger
-import subprocess
+import ffmpeg
 from vc_config import *
 from asr import VideoSrt
 from tts import TtsTools
@@ -26,10 +26,9 @@ def make_video(input_video_path, input_srt_path, output_video_path):
     if TTS_MODEL == "original":
         # Extract original audio
         original_audio_path = os.path.join(TMP_PATH, "original_audio.wav")
-        subprocess.run([
-            "ffmpeg", "-y", "-i", input_video_path, 
-            "-q:a", "0", "-map", "a", original_audio_path
-        ], check=True)
+        
+        video_tools = VideoTools.get_instance()
+        video_tools.extract_audio(input_video_path, original_audio_path)
     
     # Pass the original audio path to do_tts
     TtsTools.get_instance().do_tts(
