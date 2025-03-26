@@ -63,7 +63,7 @@ class TtsTools:
                     else:
                         logger.warning(f"Original audio too short for segment at {start_sample}:{end_sample}")
                         audio_data_1 = np.zeros(end_sample - start_sample)                
-                if TTS_MODEL == "local":
+                elif TTS_MODEL == "local":
                     ret, desc = tts_local.do_tts(
                         None, None, None, plain_text, language=LANGUAGE_CODE
                     )
