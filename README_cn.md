@@ -52,7 +52,7 @@ $ cd videocraft
 # 如需在搭建本地语音识别/合成模型，请修改 requirements.txt 和 Dockerfile
 $ docker build . -t videocraft:xxx 
 # 编辑 docker-composite.yml，修改新镜像名及volume路径
-$ docker-compose up -d
+$ docker compose up -d
 
 请先修改再运行
 
@@ -63,7 +63,7 @@ $ docker-compose up -d
 
 ``` shell
 $ docker build . -t videocraft:xxx 
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 运行后服务器中存在一个不到2G 的 `videocraft:xxx` 镜像
@@ -73,7 +73,7 @@ $ docker-compose up -d
 ``` shell
 $ docker exec -it videocraft bash # 进入容器
 $ cp default_env .env
-# 按需设置环境变量
+# 按需设置环境变量，注意设置相应的 LANGUAGE_CODE 环境变量，否则识别的语言不对
 $ python main.py -g -v xxx.mp4 -o data/tmp.srt # 提取字幕
 # 手动编辑字幕，如果需要翻译字幕，注意设置相应的 LANGUAGE_CODE 环境变量
 $ python main.py -m -v xxx.mp4 -s data/tmp.srt -o data/8da.mp4 # 合并视频，字幕，替换语音，去掉空白片断
